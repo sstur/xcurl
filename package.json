@@ -4,6 +4,7 @@
   "description": "A curl clone in Node",
   "scripts": {
     "build": "tsc --outDir lib/",
+    "clean": "rm -rf coverage lib",
     "typecheck": "tsc --noEmit -p .",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
