@@ -8,15 +8,23 @@
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
     "lint": "eslint --max-warnings 0 \"src/**/*.{ts,tsx}\"",
+    "jest": "jest --coverage --passWithNoTests",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {},
   "devDependencies": {
+    "@types/jest": "^27.0.3",
     "@types/node": "^16.11.9",
     "eslint": "7.x.x",
     "eslint-config-eslift": "^1.4.0",
+    "jest": "^27.3.1",
     "prettier": "^2.4.1",
+    "ts-jest": "^27.0.7",
     "typescript": "^4.5.2"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node"
   },
   "eslintConfig": {
     "extends": "eslift"
