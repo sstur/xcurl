@@ -9,7 +9,7 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
     "lint": "eslint --max-warnings 0 \"src/**/*.{ts,tsx}\"",
     "jest": "jest --coverage --passWithNoTests",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest"
   },
   "dependencies": {},
   "devDependencies": {
