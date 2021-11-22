@@ -1,4 +1,6 @@
 /* eslint-disable no-console */
+import { URL } from 'url';
+
 import fetch from 'node-fetch';
 import commandLineArgs from 'command-line-args';
 import commandLineUsage from 'command-line-usage';
@@ -57,7 +59,26 @@ async function main() {
     throw new AbortError(`multiple URLs specified: ${bareArgs.join(' ')}`);
   }
   let url = bareArgs[0] || '';
-  let response = await fetch(url);
+  let parsed = new URL(url);
+  let response;
+  try {
+    response = await fetch(url);
+  } catch (e: unknown) {
+    if (e instanceof Error) {
+      if (e.message.includes('reason: getaddrinfo ENOTFOUND')) {
+        throw new AbortError(`(6) Could not resolve host: ${parsed.hostname}`);
+      }
+    }
+    throw e;
+  }
+  if (args.include) {
+    // TODO: Determine the correct HTTP version
+    console.log(`HTTP/2 ${response.status} ${response.statusText}`);
+    for (let [key, value] of response.headers) {
+      console.log(`${key.toLowerCase()}: ${value}`);
+    }
+    console.log('');
+  }
   let result = await response.text();
   console.log(result);
 }
