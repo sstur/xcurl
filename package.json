@@ -2,12 +2,17 @@
   "name": "xcurl",
   "version": "0.0.0",
   "description": "A curl clone in Node",
+  "bin": {
+    "xcurl": "./bin/xcurl"
+  },
   "files": [
     "lib"
   ],
   "scripts": {
     "build": "tsc --outDir lib/",
     "clean": "rm -rf coverage lib",
+    "link": "yarn run unlink && ln -s ../../bin/xcurl node_modules/.bin/xcurl",
+    "unlink": "rm -f node_modules/.bin/xcurl",
     "typecheck": "tsc --noEmit -p .",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
