@@ -5,25 +5,21 @@ import commandLineUsage from 'command-line-usage';
 
 import cliArgSchema from './cliArgSchema';
 import { isValidUrl } from './support/isValidUrl';
+import { AbortError } from './support/Errors';
+
+// Will be either `xcurl` or `curl` depending on how the script was invoked.
+const CMD = (process.argv[1] || '').split('/').pop();
 
 function printUsage() {
   let sections = [
     {
-      header: 'Usage: curl [options...] <url>',
+      header: `Usage: ${CMD} [options...] <url>`,
       optionList: cliArgSchema,
     },
   ];
   let usage = commandLineUsage(sections);
   console.log(usage);
 }
-
-// TODO: Allow a custom error to be thrown for user-facing errors so we can
-// catch it and display error messages that match the ones from the real `curl`
-// listed below. Also, abstract the use of the word `curl`.
-// curl: no URL specified!
-// curl: (6) Could not resolve host: __
-// curl: option --foo: is unknown
-// curl: try 'curl --help' for more information
 
 async function main() {
   let argv = process.argv.slice(2);
@@ -45,20 +41,20 @@ async function main() {
   for (let item of bareArgs) {
     if (!isValidUrl(item)) {
       if (item.startsWith('-')) {
-        throw new Error(`option ${item}: is unknown`);
+        throw new AbortError(`option ${item}: is unknown`);
       } else {
-        throw new Error('invalid URL specified');
+        throw new AbortError('invalid URL specified');
       }
     }
   }
 
   if (bareArgs.length === 0) {
-    throw new Error('no URL specified!');
+    throw new AbortError('no URL specified!');
   }
   // Actually `curl` does support multiple URLs, but in our current
   // implementation we don't.
   if (bareArgs.length > 1) {
-    throw new Error(`multiple URLs specified: ${bareArgs.join(' ')}`);
+    throw new AbortError(`multiple URLs specified: ${bareArgs.join(' ')}`);
   }
   let url = bareArgs[0] || '';
   let response = await fetch(url);
@@ -67,6 +63,10 @@ async function main() {
 }
 
 main().catch((e) => {
-  console.error(e);
+  if (e instanceof AbortError) {
+    console.log(`${CMD}: ${e.message}`);
+  } else {
+    console.error(e);
+  }
   process.exit(1);
 });
