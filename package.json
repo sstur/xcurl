@@ -1,0 +1,17 @@
+{
+  "name": "xcurl",
+  "version": "0.0.0",
+  "description": "A curl clone in Node",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "homepage": "https://github.com/sstur/xcurl",
+  "repository": "github:sstur/xcurl",
+  "keywords": [
+    "curl",
+    "cli"
+  ],
+  "license": "ISC"
+}
