@@ -21,10 +21,13 @@
     "jest": "jest --coverage --passWithNoTests",
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest"
   },
-  "dependencies": {},
+  "dependencies": {
+    "node-fetch": "^2.6.6"
+  },
   "devDependencies": {
     "@types/jest": "^27.0.3",
     "@types/node": "^16.11.9",
+    "@types/node-fetch": "^2.5.12",
     "eslint": "7.x.x",
     "eslint-config-eslift": "^1.4.0",
     "jest": "^27.3.1",
