@@ -2,6 +2,9 @@
   "name": "xcurl",
   "version": "0.0.0",
   "description": "A curl clone in Node",
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "build": "tsc --outDir lib/",
     "clean": "rm -rf coverage lib",
