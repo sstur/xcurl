@@ -1,12 +1,11 @@
-import { URL } from 'url';
-
 import fetch from 'node-fetch';
 import commandLineArgs from 'command-line-args';
 import commandLineUsage from 'command-line-usage';
 
 import cliArgSchema from './cliArgSchema';
-import { isValidUrl } from './support/isValidUrl';
+import { parseUrl } from './support/parseUrl';
 import { AbortError } from './support/Errors';
+import { getFetchOptions } from './support/getFetchOptions';
 
 // Will be either `xcurl` or `curl` depending on how the script was invoked.
 const CMD = (process.argv[1] || '').split('/').pop();
@@ -28,13 +27,9 @@ async function main() {
 
   // eslint-disable-next-line no-underscore-dangle
   let bareArgs = args._unknown || [];
-  for (let item of bareArgs) {
-    if (!isValidUrl(item)) {
-      if (item.startsWith('-')) {
-        throw new AbortError(`option ${item}: is unknown`);
-      } else {
-        throw new AbortError('invalid URL specified');
-      }
+  for (let arg of bareArgs) {
+    if (arg.startsWith('-')) {
+      throw new AbortError(`option ${arg}: is unknown`);
     }
   }
 
@@ -46,11 +41,15 @@ async function main() {
   if (bareArgs.length > 1) {
     throw new AbortError(`multiple URLs specified: ${bareArgs.join(' ')}`);
   }
-  let url = bareArgs[0] || '';
-  let parsed = new URL(url);
+  let inputUrl = bareArgs[0] || '';
+  let parsed = parseUrl(inputUrl);
+  if (!parsed) {
+    throw new AbortError(`(3) URL using bad/illegal format or missing URL`);
+  }
+  let url = parsed.toString();
   let response;
   try {
-    response = await fetch(url);
+    response = await fetch(url, getFetchOptions(parsed, args));
   } catch (e: unknown) {
     if (e instanceof Error) {
       if (e.message.includes('reason: getaddrinfo ENOTFOUND')) {
