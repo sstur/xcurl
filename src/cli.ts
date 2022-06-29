@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { URL } from 'url';
 
 import fetch from 'node-fetch';
@@ -12,17 +11,6 @@ import { AbortError } from './support/Errors';
 // Will be either `xcurl` or `curl` depending on how the script was invoked.
 const CMD = (process.argv[1] || '').split('/').pop();
 
-function printUsage() {
-  let sections = [
-    {
-      header: `Usage: ${CMD} [options...] <url>`,
-      optionList: cliArgSchema,
-    },
-  ];
-  let usage = commandLineUsage(sections);
-  console.log(usage);
-}
-
 async function main() {
   let argv = process.argv.slice(2);
   let args = commandLineArgs(cliArgSchema, { argv, partial: true });
@@ -34,7 +22,7 @@ async function main() {
 
   if (args.version) {
     // TODO: Get version from package.json
-    console.log('xcurl v0.0.0');
+    print('xcurl v0.0.0');
     process.exit(0);
   }
 
@@ -73,21 +61,38 @@ async function main() {
   }
   if (args.include) {
     // TODO: Determine the correct HTTP version
-    console.log(`HTTP/2 ${response.status} ${response.statusText}`);
+    print(`HTTP/2 ${response.status} ${response.statusText}`);
     for (let [key, value] of response.headers) {
-      console.log(`${key.toLowerCase()}: ${value}`);
+      print(`${key.toLowerCase()}: ${value}`);
     }
-    console.log('');
+    print('');
   }
   let result = await response.text();
-  console.log(result);
+  print(result);
 }
 
 main().catch((e) => {
   if (e instanceof AbortError) {
-    console.log(`${CMD}: ${e.message}`);
+    print(`${CMD}: ${e.message}`);
   } else {
+    // eslint-disable-next-line no-console
     console.error(e);
   }
   process.exit(1);
 });
+
+function printUsage() {
+  let sections = [
+    {
+      header: `Usage: ${CMD} [options...] <url>`,
+      optionList: cliArgSchema,
+    },
+  ];
+  let usage = commandLineUsage(sections);
+  print(usage);
+}
+
+function print(text: string) {
+  // eslint-disable-next-line no-console
+  console.log(text);
+}
