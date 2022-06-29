@@ -67,6 +67,12 @@ export default [
   //   description: 'Send User-Agent <name> to server',
   // },
   {
+    name: 'verbose',
+    alias: 'v',
+    description: 'Make the operation more talkative',
+    type: Boolean,
+  },
+  {
     name: 'version',
     alias: 'V',
     description: 'Show version number and quit',

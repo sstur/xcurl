@@ -47,9 +47,19 @@ async function main() {
     throw new AbortError(`(3) URL using bad/illegal format or missing URL`);
   }
   let url = parsed.toString();
+  let requestOptions = getFetchOptions(parsed, args);
   let response;
+  if (args.verbose) {
+    let { method, headers } = requestOptions;
+    let path = parsed.pathname + parsed.search;
+    print(`> ${method.toUpperCase()} ${path} HTTP/1.1`);
+    for (let [name, value] of headers) {
+      print(`> ${name}: ${value}`);
+    }
+    print(`>`);
+  }
   try {
-    response = await fetch(url, getFetchOptions(parsed, args));
+    response = await fetch(url, requestOptions);
   } catch (e: unknown) {
     if (e instanceof Error) {
       if (e.message.includes('reason: getaddrinfo ENOTFOUND')) {
@@ -58,13 +68,13 @@ async function main() {
     }
     throw e;
   }
-  if (args.include) {
-    // TODO: Determine the correct HTTP version
-    print(`HTTP/2 ${response.status} ${response.statusText}`);
+  if (args.verbose || args.include) {
+    let prefix = args.verbose ? '< ' : '';
+    print(`${prefix}HTTP/1.1 ${response.status} ${response.statusText}`);
     for (let [key, value] of response.headers) {
-      print(`${key.toLowerCase()}: ${value}`);
+      print(`${prefix}${key.toLowerCase()}: ${value}`);
     }
-    print('');
+    print(prefix);
   }
   let result = await response.text();
   print(result);

@@ -1,6 +1,6 @@
 import { URL } from 'url';
 
-import { Headers, RequestInit } from 'node-fetch';
+import { Headers } from 'node-fetch';
 import { CommandLineOptions } from 'command-line-args';
 
 const methodsWithBody: Record<string, true> = {
@@ -17,13 +17,23 @@ const methodsWithoutBody: Record<string, true> = {
 
 const validMethods = { ...methodsWithBody, ...methodsWithoutBody };
 
+type FetchOptions = {
+  method: string;
+  headers: Headers;
+  body: Buffer | undefined;
+};
+
 export function getFetchOptions(
   url: URL,
   args: CommandLineOptions,
-): RequestInit {
+): FetchOptions {
   let method = toString(args.request, '').toLowerCase();
   let headersArray = toStringArray(args.header);
   let headers = new Headers();
+  // Set some default headers
+  headers.set('Host', url.host);
+  headers.set('User-Agent', 'curl');
+  headers.set('Accept', '*/*');
   for (let header of headersArray) {
     let parsed = parseHeader(header);
     if (parsed) {
@@ -31,14 +41,18 @@ export function getFetchOptions(
       headers.append(name, value);
     }
   }
-  let body = toString(args.data, null);
+  let data = toString(args.data, null);
+  let body = data ? Buffer.from(data, 'utf-8') : null;
   if (body != null && methodsWithBody[method] !== true) {
     method = 'post';
   } else if (validMethods[method] !== true) {
     method = 'get';
   }
-  if (body != null && !headers.has('Content-Type')) {
-    headers.set('Content-Type', 'application/x-www-form-urlencoded');
+  if (body != null) {
+    if (body != null && !headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/x-www-form-urlencoded');
+    }
+    headers.set('Content-Length', body.length.toString());
   }
   return {
     method,
