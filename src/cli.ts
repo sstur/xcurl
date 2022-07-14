@@ -1,3 +1,6 @@
+import { join } from 'path';
+import { createWriteStream } from 'fs';
+
 import fetch from 'node-fetch';
 import commandLineArgs from 'command-line-args';
 import commandLineUsage from 'command-line-usage';
@@ -76,8 +79,20 @@ async function main() {
     }
     print(prefix);
   }
-  let result = await response.text();
-  print(result);
+  if (args.output) {
+    let filePath = join(process.cwd(), args.output);
+    let writeStream = createWriteStream(filePath);
+    let { body } = response;
+    await new Promise<void>((resolve, reject) => {
+      body.pipe(writeStream);
+      body.on('end', resolve);
+      body.on('error', reject);
+    });
+    print(`Saved output to: ${filePath}`);
+  } else {
+    let result = await response.text();
+    print(result);
+  }
 }
 
 main().catch((e) => {

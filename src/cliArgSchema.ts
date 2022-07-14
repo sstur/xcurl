@@ -30,12 +30,12 @@ export default [
     description: 'Include protocol response headers in the output',
     type: Boolean,
   },
-  // {
-  //   name: 'output',
-  //   alias: 'o',
-  //   typeLabel: '<file>',
-  //   description: 'Write to file instead of stdout',
-  // },
+  {
+    name: 'output',
+    alias: 'o',
+    typeLabel: '<file>',
+    description: 'Write to file instead of stdout',
+  },
   // {
   //   name: 'remote-name',
   //   alias: 'O',
