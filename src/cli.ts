@@ -36,7 +36,7 @@ async function main() {
   if (bareArgs.length === 0) {
     throw new AbortError('no URL specified!');
   }
-  // Actually `curl` does support multiple URLs, but in our current
+  // Actually `curl` does support multiple URLs, but currently in this
   // implementation we don't.
   if (bareArgs.length > 1) {
     throw new AbortError(`multiple URLs specified: ${bareArgs.join(' ')}`);
