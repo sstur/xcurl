@@ -1,7 +1,7 @@
 import { join } from 'path';
 import { createWriteStream } from 'fs';
+import { StringDecoder } from 'string_decoder';
 
-import fetch from 'node-fetch';
 import commandLineArgs from 'command-line-args';
 import commandLineUsage from 'command-line-usage';
 
@@ -9,6 +9,7 @@ import cliArgSchema from './cliArgSchema';
 import { parseUrl } from './support/parseUrl';
 import { AbortError } from './support/Errors';
 import { getFetchOptions } from './support/getFetchOptions';
+import { fetch } from './support/fetch';
 
 // Will be either `xcurl` or `curl` depending on how the script was invoked.
 const CMD = (process.argv[1] || '').split('/').pop();
@@ -49,20 +50,19 @@ async function main() {
   if (!parsed) {
     throw new AbortError(`(3) URL using bad/illegal format or missing URL`);
   }
-  let url = parsed.toString();
   let requestOptions = getFetchOptions(parsed, args);
   let response;
   if (args.verbose) {
     let { method, headers } = requestOptions;
     let path = parsed.pathname + parsed.search;
     print(`> ${method.toUpperCase()} ${path} HTTP/1.1`);
-    for (let [name, value] of headers) {
+    for (let [name, value] of headers.toFlatList()) {
       print(`> ${name}: ${value}`);
     }
     print(`>`);
   }
   try {
-    response = await fetch(url, requestOptions);
+    response = await fetch(parsed, requestOptions);
   } catch (e: unknown) {
     if (e instanceof Error) {
       if (e.message.includes('reason: getaddrinfo ENOTFOUND')) {
@@ -74,8 +74,8 @@ async function main() {
   if (args.verbose || args.include) {
     let prefix = args.verbose ? '< ' : '';
     print(`${prefix}HTTP/1.1 ${response.status} ${response.statusText}`);
-    for (let [key, value] of response.headers) {
-      print(`${prefix}${key.toLowerCase()}: ${value}`);
+    for (let [name, value] of response.headers.toFlatList()) {
+      print(`${prefix}${name}: ${value}`);
     }
     print(prefix);
   }
@@ -90,8 +90,21 @@ async function main() {
     });
     print(`Saved output to: ${filePath}`);
   } else {
-    let result = await response.text();
-    print(result);
+    let { body } = response;
+    let decoder = new StringDecoder('utf8');
+    body.on('data', (chunk) => {
+      let string = decoder.write(chunk);
+      process.stdout.write(string);
+    });
+    body.on('error', (error) => {
+      print('');
+      // TODO: Better error handling.
+      print(String(error));
+    });
+    body.on('end', () => {
+      let string = decoder.end();
+      process.stdout.write(string);
+    });
   }
 }
 

@@ -24,15 +24,13 @@
   },
   "dependencies": {
     "command-line-args": "^5.2.0",
-    "command-line-usage": "^6.1.1",
-    "node-fetch": "^2.6.6"
+    "command-line-usage": "^6.1.1"
   },
   "devDependencies": {
     "@types/command-line-args": "^5.2.0",
     "@types/command-line-usage": "^5.0.2",
     "@types/jest": "^27.0.3",
     "@types/node": "^16.11.9",
-    "@types/node-fetch": "^2.5.12",
     "eslint": "7.x.x",
     "eslint-config-eslift": "^1.4.0",
     "jest": "^27.3.1",

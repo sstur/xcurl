@@ -1,7 +1,9 @@
 import { URL } from 'url';
 
-import { Headers } from 'node-fetch';
 import { CommandLineOptions } from 'command-line-args';
+
+import { Headers } from './Headers';
+import { FetchOptions } from './fetch';
 
 const methodsWithBody: Record<string, true> = {
   post: true,
@@ -17,12 +19,6 @@ const methodsWithoutBody: Record<string, true> = {
 
 const validMethods = { ...methodsWithBody, ...methodsWithoutBody };
 
-type FetchOptions = {
-  method: string;
-  headers: Headers;
-  body: Buffer | undefined;
-};
-
 export function getFetchOptions(
   url: URL,
   args: CommandLineOptions,
@@ -30,15 +26,21 @@ export function getFetchOptions(
   let method = toString(args.request, '').toLowerCase();
   let headersArray = toStringArray(args.header);
   let headers = new Headers();
-  // Set some default headers
-  headers.set('Host', url.host);
-  headers.set('User-Agent', 'curl');
-  headers.set('Accept', '*/*');
+  let defaultHeaders = new Map([
+    ['Host', url.host],
+    ['User-Agent', 'curl'],
+    ['Accept', '*/*'],
+  ]);
   for (let header of headersArray) {
     let parsed = parseHeader(header);
     if (parsed) {
       let [name, value] = parsed;
       headers.append(name, value);
+    }
+  }
+  for (let [name, value] of defaultHeaders) {
+    if (!headers.has(name)) {
+      headers.set(name, value);
     }
   }
   let data = toString(args.data, null);
