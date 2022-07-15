@@ -23,10 +23,6 @@ export function fetch(url: URL, options: FetchOptions): Promise<Response> {
       method: options.method ?? 'GET',
       headers: options.headers.toObject(),
     });
-    if (options.body) {
-      request.write(options.body);
-    }
-    request.end();
 
     request.on('error', (error) => {
       reject(error);
@@ -47,5 +43,10 @@ export function fetch(url: URL, options: FetchOptions): Promise<Response> {
         body: response,
       });
     });
+
+    if (options.body) {
+      request.write(options.body);
+    }
+    request.end();
   });
 }
