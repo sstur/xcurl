@@ -43,7 +43,17 @@
     "testEnvironment": "node"
   },
   "eslintConfig": {
-    "extends": "eslift"
+    "extends": "eslift",
+    "rules": {
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          "ignoreRestSiblings": true,
+          "varsIgnorePattern": "^_",
+          "argsIgnorePattern": "^_"
+        }
+      ]
+    }
   },
   "prettier": {
     "singleQuote": true,
