@@ -10,7 +10,6 @@
     "lib"
   ],
   "scripts": {
-    "prepare": "yarn clean && yarn build",
     "build": "tsc --outDir lib/",
     "clean": "rm -rf coverage lib",
     "link": "yarn run unlink && ln -s ../../bin/xcurl node_modules/.bin/xcurl",
@@ -20,7 +19,8 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
     "lint": "eslint --max-warnings 0 \"src/**/*.{ts,tsx}\"",
     "jest": "jest --coverage --passWithNoTests",
-    "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest"
+    "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
+    "prepublishOnly": "yarn clean && yarn build"
   },
   "dependencies": {
     "command-line-args": "^5.2.0",
