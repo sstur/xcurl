@@ -1,87 +1,76 @@
-export default [
-  {
-    name: 'data',
+import { defineSchema, ParsedResult } from '@sstur/clargs';
+
+export const schema = defineSchema(({ arg, argList, flag }) => ({
+  data: arg({
     alias: 'd',
+    optional: true,
     typeLabel: '<data>',
     description: 'HTTP POST data',
-  },
-  // {
-  //   name: 'fail',
+  }),
+  // fail: arg({
   //   alias: 'f',
   //   description: 'Fail silently (no output at all) on HTTP errors',
-  //   type: Boolean,
-  // },
-  {
-    name: 'header',
+  //   type: 'boolean',
+  // }),
+  header: argList({
     alias: 'H',
     typeLabel: '<header/@file>',
     description: 'Pass custom header(s) to server',
     lazyMultiple: true,
-  },
-  {
-    name: 'help',
+  }),
+  help: flag({
     alias: 'h',
     description: 'Get help for commands',
-    type: Boolean,
-  },
-  {
-    name: 'include',
+  }),
+  include: flag({
     alias: 'i',
     description: 'Include protocol response headers in the output',
-    type: Boolean,
-  },
-  {
-    name: 'output',
+  }),
+  output: arg({
     alias: 'o',
+    optional: true,
     typeLabel: '<file>',
     description: 'Write to file instead of stdout',
-  },
-  // {
-  //   name: 'remote-name',
+  }),
+  // 'remote-name': arg({
   //   alias: 'O',
   //   description: 'Write output to a file named as the remote file',
-  //   type: Boolean,
-  // },
-  // {
-  //   name: 'silent',
+  //   type: 'boolean',
+  // }),
+  // silent: arg({
   //   alias: 's',
   //   description: 'Silent mode',
-  //   type: Boolean,
-  // },
-  // {
-  //   name: 'upload-file',
+  //   type: 'boolean',
+  // }),
+  // 'upload-file': arg({
   //   alias: 'T',
   //   typeLabel: '<file>',
   //   description: 'Transfer local FILE to destination',
-  // },
-  // {
-  //   name: 'user',
+  // }),
+  // user: arg({
   //   alias: 'u',
   //   typeLabel: '<user:password>',
   //   description: 'Server user and password',
-  // },
-  // {
-  //   name: 'user-agent',
+  // }),
+  // 'user-agent': arg({
   //   alias: 'A',
   //   typeLabel: '<name>',
   //   description: 'Send User-Agent <name> to server',
-  // },
-  {
-    name: 'verbose',
+  // }),
+  verbose: flag({
     alias: 'v',
     description: 'Make the operation more talkative',
-    type: Boolean,
-  },
-  {
-    name: 'version',
+  }),
+  version: flag({
     alias: 'V',
     description: 'Show version number and quit',
-    type: Boolean,
-  },
-  {
-    name: 'request',
+  }),
+  request: arg({
     alias: 'X',
+    optional: true,
     typeLabel: '<command>',
     description: 'Specify request command to use',
-  },
-];
+  }),
+}));
+
+export type ParsedOptions = ParsedResult<typeof schema>;

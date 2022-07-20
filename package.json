@@ -22,13 +22,9 @@
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
     "prepublishOnly": "yarn clean && yarn build"
   },
-  "dependencies": {
-    "command-line-args": "^5.2.0",
-    "command-line-usage": "^6.1.1"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "@types/command-line-args": "^5.2.0",
-    "@types/command-line-usage": "^5.0.2",
+    "@sstur/clargs": "^1.4.0",
     "@types/jest": "^27.0.3",
     "@types/node": "^16.11.9",
     "eslint": "7.x.x",

@@ -2,10 +2,9 @@ import { join } from 'path';
 import { createWriteStream } from 'fs';
 import { StringDecoder } from 'string_decoder';
 
-import commandLineArgs from 'command-line-args';
-import commandLineUsage from 'command-line-usage';
+import { createParser } from '@sstur/clargs';
 
-import cliArgSchema from './cliArgSchema';
+import { schema } from './cliArgSchema';
 import { parseUrl } from './support/parseUrl';
 import { AbortError } from './support/Errors';
 import { getFetchOptions } from './support/getFetchOptions';
@@ -16,7 +15,8 @@ const CMD = (process.argv[1] || '').split('/').pop();
 
 async function main() {
   let argv = process.argv.slice(2);
-  let args = commandLineArgs(cliArgSchema, { argv, partial: true });
+  let parser = createParser(schema);
+  let args = parser.parse(argv);
 
   if (args.help) {
     printUsage();
@@ -30,7 +30,7 @@ async function main() {
   }
 
   // eslint-disable-next-line no-underscore-dangle
-  let bareArgs = args._unknown || [];
+  let bareArgs = args._rest;
   for (let arg of bareArgs) {
     if (arg.startsWith('-')) {
       throw new AbortError(`option ${arg}: is unknown`);
@@ -119,14 +119,8 @@ main().catch((e) => {
 });
 
 function printUsage() {
-  let sections = [
-    {
-      header: `Usage: ${CMD} [options...] <url>`,
-      optionList: cliArgSchema,
-    },
-  ];
-  let usage = commandLineUsage(sections);
-  print(usage);
+  // TODO
+  print(`Usage: ${CMD} [options...] <url>`);
 }
 
 function print(text: string) {

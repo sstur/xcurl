@@ -1,6 +1,6 @@
 import { URL } from 'url';
 
-import { CommandLineOptions } from 'command-line-args';
+import { ParsedOptions } from '../cliArgSchema';
 
 import { Headers } from './Headers';
 import { FetchOptions } from './fetch';
@@ -19,12 +19,9 @@ const methodsWithoutBody: Record<string, true> = {
 
 const validMethods = { ...methodsWithBody, ...methodsWithoutBody };
 
-export function getFetchOptions(
-  url: URL,
-  args: CommandLineOptions,
-): FetchOptions {
-  let method = toString(args.request, '').toLowerCase();
-  let headersArray = toStringArray(args.header);
+export function getFetchOptions(url: URL, args: ParsedOptions): FetchOptions {
+  let method = (args.request ?? '').toLowerCase();
+  let headersArray = args.header;
   let headers = new Headers();
   let defaultHeaders = new Map([
     ['Host', url.host],
@@ -43,7 +40,7 @@ export function getFetchOptions(
       headers.set(name, value);
     }
   }
-  let data = toString(args.data, null);
+  let { data } = args;
   let body = data ? Buffer.from(data, 'utf-8') : null;
   if (body != null && methodsWithBody[method] !== true) {
     method = 'post';
@@ -70,14 +67,4 @@ function parseHeader(input: string): [string, string] | null {
     return [name.trim(), value.trim()];
   }
   return null;
-}
-
-function toString<T = null>(value: unknown, fallback: T): string | T {
-  return typeof value === 'string' ? value : fallback;
-}
-
-function toStringArray(input: unknown): Array<string> {
-  return Array.isArray(input)
-    ? input.filter((el) => typeof el === 'string')
-    : [];
 }
