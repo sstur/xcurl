@@ -2,7 +2,7 @@ import { join } from 'path';
 import { createWriteStream } from 'fs';
 import { StringDecoder } from 'string_decoder';
 
-import { createParser } from '@sstur/clargs';
+import { createParser, renderUsage } from '@sstur/clargs';
 
 import { schema } from './cliArgSchema';
 import { parseUrl } from './support/parseUrl';
@@ -118,11 +118,11 @@ main().catch((e) => {
 });
 
 function printUsage() {
-  // TODO
-  print(`Usage: ${CMD} [options...] <url>`);
+  const header = `Usage: ${CMD} [options...] <url>`;
+  const usage = renderUsage(schema, { header });
+  print(usage);
 }
 
 function print(text: string) {
-  // eslint-disable-next-line no-console
-  console.log(text);
+  process.stdout.write(text.slice(-1) === '\n' ? text : text + '\n');
 }
