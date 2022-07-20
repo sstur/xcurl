@@ -29,7 +29,6 @@ async function main() {
     process.exit(0);
   }
 
-  // eslint-disable-next-line no-underscore-dangle
   let bareArgs = args._rest;
   for (let arg of bareArgs) {
     if (arg.startsWith('-')) {

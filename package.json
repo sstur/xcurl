@@ -10,45 +10,41 @@
     "lib"
   ],
   "scripts": {
-    "build": "tsc --outDir lib/",
-    "clean": "rm -rf coverage lib",
     "link": "yarn run unlink && ln -s ../../bin/xcurl node_modules/.bin/xcurl",
     "unlink": "rm -f node_modules/.bin/xcurl",
+    "lint": "eslint --max-warnings 0 \"src/**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit -p .",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
-    "lint": "eslint --max-warnings 0 \"src/**/*.{ts,tsx}\"",
     "jest": "jest --coverage --passWithNoTests",
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
+    "clean": "rm -rf coverage lib",
+    "build": "tsc --outDir lib/",
     "prepublishOnly": "yarn clean && yarn build"
   },
   "dependencies": {},
   "devDependencies": {
     "@sstur/clargs": "^1.4.0",
-    "@types/jest": "^27.0.3",
-    "@types/node": "^16.11.9",
-    "eslint": "7.x.x",
-    "eslint-config-eslift": "^1.4.0",
-    "jest": "^27.3.1",
-    "prettier": "^2.4.1",
-    "ts-jest": "^27.0.7",
-    "typescript": "^4.5.2"
+    "@types/jest": "^28.1.6",
+    "@types/node": "^18.0.6",
+    "eslint": "^8.20.0",
+    "eslint-config-xt": "^1.7.0",
+    "jest": "^28.1.3",
+    "prettier": "^2.7.1",
+    "ts-jest": "^28.0.7",
+    "typescript": "^4.7.4"
   },
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node"
   },
   "eslintConfig": {
-    "extends": "eslift",
+    "extends": "xt",
+    "ignorePatterns": [
+      "/lib"
+    ],
     "rules": {
-      "@typescript-eslint/no-unused-vars": [
-        "warn",
-        {
-          "ignoreRestSiblings": true,
-          "varsIgnorePattern": "^_",
-          "argsIgnorePattern": "^_"
-        }
-      ]
+      "@typescript-eslint/consistent-type-imports": "off"
     }
   },
   "prettier": {
