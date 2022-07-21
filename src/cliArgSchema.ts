@@ -16,7 +16,6 @@ export const schema = defineSchema(({ arg, argList, flag }) => ({
     alias: 'H',
     typeLabel: '<header/@file>',
     description: 'Pass custom header(s) to server',
-    lazyMultiple: true,
   }),
   help: flag({
     alias: 'h',
@@ -57,6 +56,11 @@ export const schema = defineSchema(({ arg, argList, flag }) => ({
   //   typeLabel: '<name>',
   //   description: 'Send User-Agent <name> to server',
   // }),
+  url: arg({
+    optional: true,
+    typeLabel: '<url>',
+    description: 'URL to work with',
+  }),
   verbose: flag({
     alias: 'v',
     description: 'Make the operation more talkative',

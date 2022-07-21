@@ -36,19 +36,21 @@ async function main() {
     }
   }
 
-  if (bareArgs.length === 0) {
+  let inputUrl = args.url || bareArgs.shift() || '';
+  if (!inputUrl) {
     throw new AbortError('no URL specified!');
   }
-  // Actually `curl` does support multiple URLs, but currently in this
-  // implementation we don't.
-  if (bareArgs.length > 1) {
-    throw new AbortError(`multiple URLs specified: ${bareArgs.join(' ')}`);
-  }
-  let inputUrl = bareArgs[0] || '';
   let parsed = parseUrl(inputUrl);
   if (!parsed) {
     throw new AbortError(`(3) URL using bad/illegal format or missing URL`);
   }
+
+  // Actually `curl` does support multiple URLs, but currently in this
+  // implementation we don't.
+  if (bareArgs.length) {
+    throw new AbortError(`extraneous option: ${bareArgs[0]}`);
+  }
+
   let requestOptions = getFetchOptions(parsed, args);
   let response;
   if (args.verbose) {
