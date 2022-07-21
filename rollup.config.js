@@ -5,7 +5,7 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 export default {
   input: 'src/cli.ts',
   output: {
-    dir: 'lib',
+    file: 'build/index.js',
     format: 'cjs',
     strict: false,
     esModule: false,

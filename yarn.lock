@@ -2490,6 +2490,11 @@ kleur@^3.0.3:
   resolved "https://registry.yarnpkg.com/kleur/-/kleur-3.0.3.tgz#a79c9ecc86ee1ce3fa6206d1216c501f147fc07e"
   integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
 
+lean-package@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/lean-package/-/lean-package-1.2.0.tgz#04a9807af6523a0aafa0656d3c1276afe4def2f3"
+  integrity sha512-ezXdSxYU5oI6vsrhQmMWlz9XF806I+1wTVCG2/uoBfoz6UtCOZWk/JXf1UxN4XPCceYuztfyeIzjQSvVPxWcJA==
+
 leven@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/leven/-/leven-3.1.0.tgz#77891de834064cccba82ae7842bb6b14a13ed7f2"
