@@ -1,5 +1,6 @@
 import { join } from 'path';
 import { createWriteStream } from 'fs';
+import { readFile } from 'fs/promises';
 import { StringDecoder } from 'string_decoder';
 
 import { createParser, renderUsage } from '@sstur/clargs';
@@ -20,13 +21,16 @@ async function main() {
 
   if (args.help) {
     printUsage();
-    process.exit(0);
+    return;
   }
 
   if (args.version) {
-    // TODO: Get version from package.json
-    print('xcurl v0.0.0');
-    process.exit(0);
+    const root = __dirname.endsWith('/src') ? join(__dirname, '..') : __dirname;
+    const source = await readFile(join(root, 'package.json'), 'utf8');
+    const parsed = JSON.parse(source);
+    const version = parsed.version || '0.0.0';
+    print(`xcurl v${version}`);
+    return;
   }
 
   let bareArgs = args._rest;
