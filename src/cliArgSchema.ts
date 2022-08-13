@@ -7,10 +7,9 @@ export const schema = defineSchema(({ arg, argList, flag }) => ({
     typeLabel: '<data>',
     description: 'HTTP POST data',
   }),
-  // fail: arg({
+  // fail: flag({
   //   alias: 'f',
   //   description: 'Fail silently (no output at all) on HTTP errors',
-  //   type: 'boolean',
   // }),
   header: argList({
     alias: 'H',
@@ -31,16 +30,14 @@ export const schema = defineSchema(({ arg, argList, flag }) => ({
     typeLabel: '<file>',
     description: 'Write to file instead of stdout',
   }),
-  // 'remote-name': arg({
+  // 'remote-name': flag({
   //   alias: 'O',
   //   description: 'Write output to a file named as the remote file',
-  //   type: 'boolean',
   // }),
-  // silent: arg({
-  //   alias: 's',
-  //   description: 'Silent mode',
-  //   type: 'boolean',
-  // }),
+  silent: flag({
+    alias: 's',
+    description: 'Silent mode',
+  }),
   // 'upload-file': arg({
   //   alias: 'T',
   //   typeLabel: '<file>',

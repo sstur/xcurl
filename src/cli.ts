@@ -20,7 +20,7 @@ async function main() {
   let args = parser.parse(argv);
 
   if (args.help) {
-    printUsage();
+    print(usage());
     return;
   }
 
@@ -55,6 +55,7 @@ async function main() {
     throw new AbortError(`extraneous option: ${bareArgs[0]}`);
   }
 
+  let startTime = Date.now();
   let requestOptions = getFetchOptions(parsed, args);
   let response;
   if (args.verbose) {
@@ -84,27 +85,42 @@ async function main() {
     }
     print(prefix);
   }
+  let { body } = response;
+  let bytesReceived = 0;
+  let timeElapsed = 0;
+  body.on('data', (chunk) => {
+    bytesReceived += chunk.length;
+  });
+  body.on('end', () => {
+    timeElapsed = Date.now() - startTime;
+    if (!args.silent) {
+      print(
+        `Received ${bytesReceived} of ${bytesReceived} in ${timeElapsed} ms`,
+        { stdErr: true },
+      );
+    }
+  });
   if (args.output) {
     let filePath = join(process.cwd(), args.output);
     let writeStream = createWriteStream(filePath);
-    let { body } = response;
     await new Promise<void>((resolve, reject) => {
       body.pipe(writeStream);
       body.on('end', resolve);
       body.on('error', reject);
     });
-    print(`Saved output to: ${filePath}`);
+    if (!args.silent) {
+      print(`Saved output to: ${filePath}`, { stdErr: true });
+    }
   } else {
-    let { body } = response;
     let decoder = new StringDecoder('utf8');
     body.on('data', (chunk) => {
       let string = decoder.write(chunk);
       process.stdout.write(string);
     });
     body.on('error', (error) => {
-      print('');
+      print('', { stdErr: true });
       // TODO: Better error handling.
-      print(String(error));
+      print(String(error), { stdErr: true });
     });
     body.on('end', () => {
       let string = decoder.end();
@@ -115,7 +131,7 @@ async function main() {
 
 main().catch((e) => {
   if (e instanceof AbortError) {
-    print(`${CMD}: ${e.message}`);
+    print(`${CMD}: ${e.message}`, { stdErr: true });
   } else {
     // eslint-disable-next-line no-console
     console.error(e);
@@ -123,12 +139,16 @@ main().catch((e) => {
   process.exit(1);
 });
 
-function printUsage() {
+function usage() {
   const header = `Usage: ${CMD} [options...] <url>`;
-  const usage = renderUsage(schema, { header });
-  print(usage);
+  return renderUsage(schema, { header });
 }
 
-function print(text: string) {
-  process.stdout.write(text.slice(-1) === '\n' ? text : text + '\n');
+function print(text: string, options?: { stdErr: boolean }) {
+  const output = text.slice(-1) === '\n' ? text : text + '\n';
+  if (options?.stdErr) {
+    process.stderr.write(output);
+  } else {
+    process.stdout.write(output);
+  }
 }
