@@ -41,6 +41,7 @@ async function main() {
     ? createWriteStream(outFile)
     : process.stdout;
   let output = createLineWriter(stdout);
+  let isTTY = Boolean(Object(stdout).isTTY);
 
   let bareArgs = args._rest;
   for (let arg of bareArgs) {
@@ -102,14 +103,14 @@ async function main() {
   });
   body.on('end', () => {
     timeElapsed = Date.now() - startTime;
-    if (!args.silent) {
+    if (!isTTY && !args.silent) {
       notice(
         `Received ${bytesReceived} of ${bytesReceived} in ${timeElapsed} ms`,
       );
     }
   });
   // If we're writing to an interactive terminal, let's convert to string
-  if (Object(stdout).isTTY) {
+  if (isTTY) {
     await pipeAsString(body, stdout);
   } else {
     await pipe(body, stdout);
