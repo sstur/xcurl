@@ -14,6 +14,9 @@ import { fetch } from './support/fetch';
 // Will be either `xcurl` or `curl` depending on how the script was invoked.
 const CMD = (process.argv[1] || '').split('/').pop();
 
+const print = createLineWriter(process.stdout);
+const notice = createLineWriter(process.stderr);
+
 async function main() {
   let argv = process.argv.slice(2);
   let parser = createParser(schema);
@@ -32,6 +35,12 @@ async function main() {
     print(`xcurl v${version}`);
     return;
   }
+
+  let outFile = args.output ? join(process.cwd(), args.output) : null;
+  let stdout: NodeJS.WritableStream = outFile
+    ? createWriteStream(outFile)
+    : process.stdout;
+  let output = createLineWriter(stdout);
 
   let bareArgs = args._rest;
   for (let arg of bareArgs) {
@@ -61,11 +70,11 @@ async function main() {
   if (args.verbose) {
     let { method, headers } = requestOptions;
     let path = parsed.pathname + parsed.search;
-    print(`> ${method.toUpperCase()} ${path} HTTP/1.1`);
+    output(`> ${method.toUpperCase()} ${path} HTTP/1.1`);
     for (let [name, value] of headers.toFlatList()) {
-      print(`> ${name}: ${value}`);
+      output(`> ${name}: ${value}`);
     }
-    print(`>`);
+    output(`>`);
   }
   try {
     response = await fetch(parsed, requestOptions);
@@ -79,11 +88,11 @@ async function main() {
   }
   if (args.verbose || args.include) {
     let prefix = args.verbose ? '< ' : '';
-    print(`${prefix}HTTP/1.1 ${response.status} ${response.statusText}`);
+    output(`${prefix}HTTP/1.1 ${response.status} ${response.statusText}`);
     for (let [name, value] of response.headers.toFlatList()) {
-      print(`${prefix}${name}: ${value}`);
+      output(`${prefix}${name}: ${value}`);
     }
-    print(prefix);
+    output(prefix);
   }
   let { body } = response;
   let bytesReceived = 0;
@@ -94,44 +103,25 @@ async function main() {
   body.on('end', () => {
     timeElapsed = Date.now() - startTime;
     if (!args.silent) {
-      print(
+      notice(
         `Received ${bytesReceived} of ${bytesReceived} in ${timeElapsed} ms`,
-        { stdErr: true },
       );
     }
   });
-  if (args.output) {
-    let filePath = join(process.cwd(), args.output);
-    let writeStream = createWriteStream(filePath);
-    await new Promise<void>((resolve, reject) => {
-      body.pipe(writeStream);
-      body.on('end', resolve);
-      body.on('error', reject);
-    });
-    if (!args.silent) {
-      print(`Saved output to: ${filePath}`, { stdErr: true });
-    }
+  // If we're writing to an interactive terminal, let's convert to string
+  if (Object(stdout).isTTY) {
+    await pipeAsString(body, stdout);
   } else {
-    let decoder = new StringDecoder('utf8');
-    body.on('data', (chunk) => {
-      let string = decoder.write(chunk);
-      process.stdout.write(string);
-    });
-    body.on('error', (error) => {
-      print('', { stdErr: true });
-      // TODO: Better error handling.
-      print(String(error), { stdErr: true });
-    });
-    body.on('end', () => {
-      let string = decoder.end();
-      process.stdout.write(string);
-    });
+    await pipe(body, stdout);
+  }
+  if (outFile && !args.silent) {
+    notice(`Saved output to: ${outFile}`);
   }
 }
 
 main().catch((e) => {
   if (e instanceof AbortError) {
-    print(`${CMD}: ${e.message}`, { stdErr: true });
+    notice(`${CMD}: ${e.message}`);
   } else {
     // eslint-disable-next-line no-console
     console.error(e);
@@ -139,16 +129,46 @@ main().catch((e) => {
   process.exit(1);
 });
 
+function pipe(
+  readStream: NodeJS.ReadableStream,
+  writeStream: NodeJS.WritableStream,
+) {
+  return new Promise<void>((resolve, reject) => {
+    readStream.pipe(writeStream);
+    readStream.on('end', resolve);
+    readStream.on('error', reject);
+  });
+}
+
+function pipeAsString(
+  readStream: NodeJS.ReadableStream,
+  writeStream: NodeJS.WritableStream,
+) {
+  return new Promise<void>((resolve, reject) => {
+    let decoder = new StringDecoder('utf8');
+    readStream.on('data', (chunk) => {
+      let string = decoder.write(chunk);
+      writeStream.write(string);
+    });
+    readStream.on('error', (error) => {
+      reject(error);
+    });
+    readStream.on('end', () => {
+      let string = decoder.end();
+      writeStream.write(string);
+      resolve();
+    });
+  });
+}
+
 function usage() {
   const header = `Usage: ${CMD} [options...] <url>`;
   return renderUsage(schema, { header });
 }
 
-function print(text: string, options?: { stdErr: boolean }) {
-  const output = text.slice(-1) === '\n' ? text : text + '\n';
-  if (options?.stdErr) {
-    process.stderr.write(output);
-  } else {
-    process.stdout.write(output);
-  }
+function createLineWriter(writeStream: NodeJS.WritableStream) {
+  return (text: string) => {
+    const output = text.slice(-1) === '\n' ? text : text + '\n';
+    writeStream.write(output);
+  };
 }
