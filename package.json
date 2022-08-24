@@ -21,7 +21,8 @@
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
     "clean": "rm -rf build coverage",
     "copy-files": "cp README.md build/ && cp -R bin build/ && lean-package > build/package.json",
-    "build": "yarn clean && rollup -c && yarn copy-files && prettier --write build"
+    "build": "yarn clean && rollup -c && yarn copy-files && prettier --write build",
+    "prepublishOnly": "echo '!! Please use ./publish.sh instead !!' && exit 1"
   },
   "dependencies": {},
   "devDependencies": {
