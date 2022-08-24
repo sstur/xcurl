@@ -7,6 +7,21 @@ export const schema = defineSchema(({ arg, argList, flag }) => ({
     typeLabel: '<data>',
     description: 'HTTP POST data',
   }),
+  'data-ascii': arg({
+    optional: true,
+    typeLabel: '<data>',
+    description: 'HTTP POST ASCII data',
+  }),
+  'data-binary': arg({
+    optional: true,
+    typeLabel: '<data>',
+    description: 'HTTP POST binary data',
+  }),
+  'data-raw': arg({
+    optional: true,
+    typeLabel: '<data>',
+    description: `HTTP POST data, '@' allowed`,
+  }),
   // fail: flag({
   //   alias: 'f',
   //   description: 'Fail silently (no output at all) on HTTP errors',

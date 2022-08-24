@@ -81,6 +81,10 @@ async function main() {
     response = await fetch(parsed, requestOptions);
   } catch (e: unknown) {
     if (e instanceof Error) {
+      if (Object(e).code === 'ENOENT') {
+        const path = String(Object(e).path);
+        throw new AbortError(`Couldn't read data from file "${path}"`);
+      }
       if (e.message.includes('reason: getaddrinfo ENOTFOUND')) {
         throw new AbortError(`(6) Could not resolve host: ${parsed.hostname}`);
       }

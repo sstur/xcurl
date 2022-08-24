@@ -7,7 +7,7 @@ import { Headers } from './Headers';
 export type FetchOptions = {
   method: string;
   headers: Headers;
-  body: Buffer | undefined;
+  body: Buffer | Readable | undefined;
 };
 
 type Response = {
@@ -44,9 +44,16 @@ export function fetch(url: URL, options: FetchOptions): Promise<Response> {
       });
     });
 
-    if (options.body) {
-      request.write(options.body);
+    const { body } = options;
+    if (body === undefined) {
+      request.end();
+    } else if (Buffer.isBuffer(body)) {
+      request.write(body);
+      request.end();
+    } else {
+      const readStream = body;
+      readStream.on('error', (error) => reject(error));
+      readStream.pipe(request);
     }
-    request.end();
   });
 }

@@ -1,4 +1,7 @@
 import { URL } from 'url';
+import { join } from 'path';
+import { Readable } from 'stream';
+import { createReadStream } from 'fs';
 
 import { ParsedOptions } from '../cliArgSchema';
 
@@ -40,23 +43,40 @@ export function getFetchOptions(url: URL, args: ParsedOptions): FetchOptions {
       headers.set(name, value);
     }
   }
-  let { data } = args;
-  let body = data ? Buffer.from(data, 'utf-8') : null;
-  if (body != null && methodsWithBody[method] !== true) {
+  let data =
+    args.data ??
+    args['data-ascii'] ??
+    args['data-binary'] ??
+    args['data-binary'] ??
+    args['data-raw'];
+  let fromFile: string | undefined;
+  if (!args['data-raw'] && data?.startsWith('@')) {
+    fromFile = join(process.cwd(), data.slice(1));
+  }
+  let body: Buffer | Readable | undefined;
+  if (fromFile) {
+    body = createReadStream(fromFile);
+  } else {
+    body = data ? Buffer.from(data, 'utf-8') : undefined;
+  }
+
+  if (body !== undefined && methodsWithBody[method] !== true) {
     method = 'post';
   } else if (validMethods[method] !== true) {
     method = 'get';
   }
-  if (body != null) {
-    if (body != null && !headers.has('Content-Type')) {
+  if (body !== undefined) {
+    if (!headers.has('Content-Type')) {
       headers.set('Content-Type', 'application/x-www-form-urlencoded');
     }
-    headers.set('Content-Length', body.length.toString());
+    if (Buffer.isBuffer(body)) {
+      headers.set('Content-Length', body.length.toString());
+    }
   }
   return {
     method,
     headers,
-    body: body ?? undefined,
+    body,
   };
 }
 
