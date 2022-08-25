@@ -44,11 +44,7 @@ export function getFetchOptions(url: URL, args: ParsedOptions): FetchOptions {
     }
   }
   let data =
-    args.data ??
-    args['data-ascii'] ??
-    args['data-binary'] ??
-    args['data-binary'] ??
-    args['data-raw'];
+    args.data ?? args['data-ascii'] ?? args['data-binary'] ?? args['data-raw'];
   let fromFile: string | undefined;
   if (!args['data-raw'] && data?.startsWith('@')) {
     fromFile = join(process.cwd(), data.slice(1));
