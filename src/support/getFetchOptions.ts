@@ -24,26 +24,26 @@ const validMethods = { ...methodsWithBody, ...methodsWithoutBody };
 
 export function getFetchOptions(url: URL, args: ParsedOptions): FetchOptions {
   let method = (args.request ?? '').toLowerCase();
-  let headersArray = args.header;
-  let headers = new Headers();
-  let defaultHeaders = new Map([
+  const headersArray = args.header;
+  const headers = new Headers();
+  const defaultHeaders = new Map([
     ['Host', url.host],
     ['User-Agent', 'curl'],
     ['Accept', '*/*'],
   ]);
-  for (let header of headersArray) {
-    let parsed = parseHeader(header);
+  for (const header of headersArray) {
+    const parsed = parseHeader(header);
     if (parsed) {
-      let [name, value] = parsed;
+      const [name, value] = parsed;
       headers.append(name, value);
     }
   }
-  for (let [name, value] of defaultHeaders) {
+  for (const [name, value] of defaultHeaders) {
     if (!headers.has(name)) {
       headers.set(name, value);
     }
   }
-  let data =
+  const data =
     args.data ?? args['data-ascii'] ?? args['data-binary'] ?? args['data-raw'];
   let fromFile: string | undefined;
   if (!args['data-raw'] && data?.startsWith('@')) {
@@ -77,9 +77,9 @@ export function getFetchOptions(url: URL, args: ParsedOptions): FetchOptions {
 }
 
 function parseHeader(input: string): [string, string] | null {
-  let [name, ...values] = input.split(':');
+  const [name, ...values] = input.split(':');
   if (name && values.length) {
-    let value = values.join(':');
+    const value = values.join(':');
     return [name.trim(), value.trim()];
   }
   return null;

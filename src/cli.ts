@@ -18,9 +18,9 @@ const print = createLineWriter(process.stdout);
 const notice = createLineWriter(process.stderr);
 
 async function main() {
-  let argv = process.argv.slice(2);
-  let parser = createParser(schema);
-  let args = parser.parse(argv);
+  const argv = process.argv.slice(2);
+  const parser = createParser(schema);
+  const args = parser.parse(argv);
 
   if (args.help) {
     print(usage());
@@ -36,25 +36,25 @@ async function main() {
     return;
   }
 
-  let outFile = args.output ? join(process.cwd(), args.output) : null;
-  let stdout: NodeJS.WritableStream = outFile
+  const outFile = args.output ? join(process.cwd(), args.output) : null;
+  const stdout: NodeJS.WritableStream = outFile
     ? createWriteStream(outFile)
     : process.stdout;
-  let output = createLineWriter(stdout);
-  let isTTY = Boolean(Object(stdout).isTTY);
+  const output = createLineWriter(stdout);
+  const isTTY = Boolean(Object(stdout).isTTY);
 
-  let bareArgs = args._rest;
-  for (let arg of bareArgs) {
+  const bareArgs = args._rest;
+  for (const arg of bareArgs) {
     if (arg.startsWith('-')) {
       throw new AbortError(`option ${arg}: is unknown`);
     }
   }
 
-  let inputUrl = args.url || bareArgs.shift() || '';
+  const inputUrl = args.url || bareArgs.shift() || '';
   if (!inputUrl) {
     throw new AbortError('no URL specified!');
   }
-  let parsed = parseUrl(inputUrl);
+  const parsed = parseUrl(inputUrl);
   if (!parsed) {
     throw new AbortError(`(3) URL using bad/illegal format or missing URL`);
   }
@@ -65,14 +65,14 @@ async function main() {
     throw new AbortError(`extraneous option: ${bareArgs[0]}`);
   }
 
-  let startTime = Date.now();
-  let requestOptions = getFetchOptions(parsed, args);
+  const startTime = Date.now();
+  const requestOptions = getFetchOptions(parsed, args);
   let response;
   if (args.verbose) {
-    let { method, headers } = requestOptions;
-    let path = parsed.pathname + parsed.search;
+    const { method, headers } = requestOptions;
+    const path = parsed.pathname + parsed.search;
     output(`> ${method.toUpperCase()} ${path} HTTP/1.1`);
-    for (let [name, value] of headers.toFlatList()) {
+    for (const [name, value] of headers.toFlatList()) {
       output(`> ${name}: ${value}`);
     }
     output(`>`);
@@ -92,14 +92,14 @@ async function main() {
     throw e;
   }
   if (args.verbose || args.include) {
-    let prefix = args.verbose ? '< ' : '';
+    const prefix = args.verbose ? '< ' : '';
     output(`${prefix}HTTP/1.1 ${response.status} ${response.statusText}`);
-    for (let [name, value] of response.headers.toFlatList()) {
+    for (const [name, value] of response.headers.toFlatList()) {
       output(`${prefix}${name}: ${value}`);
     }
     output(prefix);
   }
-  let { body } = response;
+  const { body } = response;
   let bytesReceived = 0;
   let timeElapsed = 0;
   body.on('data', (chunk) => {
@@ -150,16 +150,16 @@ function pipeAsString(
   writeStream: NodeJS.WritableStream,
 ) {
   return new Promise<void>((resolve, reject) => {
-    let decoder = new StringDecoder('utf8');
+    const decoder = new StringDecoder('utf8');
     readStream.on('data', (chunk) => {
-      let string = decoder.write(chunk);
+      const string = decoder.write(chunk);
       writeStream.write(string);
     });
     readStream.on('error', (error) => {
       reject(error);
     });
     readStream.on('end', () => {
-      let string = decoder.end();
+      const string = decoder.end();
       writeStream.write(string);
       resolve();
     });

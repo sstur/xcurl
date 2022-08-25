@@ -32,8 +32,8 @@ export function fetch(url: URL, options: FetchOptions): Promise<Response> {
       const { statusCode, statusMessage, rawHeaders } = response;
       const headers = new Headers();
       for (let i = 0; i < rawHeaders.length; i++) {
-        let name = rawHeaders[i] ?? '';
-        let value = rawHeaders[++i] ?? '';
+        const name = rawHeaders[i] ?? '';
+        const value = rawHeaders[++i] ?? '';
         headers.append(name, value);
       }
       resolve({

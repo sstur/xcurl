@@ -52,6 +52,7 @@
       "/build"
     ],
     "rules": {
+      "prefer-const": "warn",
       "@typescript-eslint/consistent-type-imports": "off"
     }
   },
