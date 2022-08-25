@@ -38,6 +38,7 @@
     "lean-package": "^1.2.0",
     "prettier": "^2.7.1",
     "rollup": "^2.77.0",
+    "rollup-plugin-cleanup": "^3.2.1",
     "ts-jest": "^28.0.7",
     "typescript": "^4.7.4"
   },

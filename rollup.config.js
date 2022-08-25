@@ -1,5 +1,6 @@
 import typescript from '@rollup/plugin-typescript';
 import commonjs from '@rollup/plugin-commonjs';
+import cleanup from 'rollup-plugin-cleanup';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 
 export default {
@@ -15,6 +16,9 @@ export default {
     nodeResolve(),
     typescript({
       module: 'esnext',
+    }),
+    cleanup({
+      extensions: ['js', 'ts'],
     }),
   ],
 };
