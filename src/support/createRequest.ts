@@ -1,4 +1,4 @@
-import { URL } from 'url';
+import { type URL } from 'url';
 import { request as requestHttp } from 'http';
 import { request as requestHttps } from 'https';
 

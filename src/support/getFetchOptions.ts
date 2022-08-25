@@ -1,12 +1,12 @@
-import { URL } from 'url';
 import { join } from 'path';
-import { Readable } from 'stream';
 import { createReadStream } from 'fs';
+import { type URL } from 'url';
+import { type Readable } from 'stream';
 
-import { ParsedOptions } from '../cliArgSchema';
+import { type ParsedOptions } from '../cliArgSchema';
 
 import { Headers } from './Headers';
-import { FetchOptions } from './fetch';
+import { type FetchOptions } from './fetch';
 
 const methodsWithBody: Record<string, true> = {
   post: true,

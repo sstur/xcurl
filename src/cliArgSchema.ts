@@ -1,4 +1,4 @@
-import { defineSchema, ParsedResult } from '@sstur/clargs';
+import { defineSchema, type ParsedResult } from '@sstur/clargs';
 
 export const schema = defineSchema(({ arg, argList, flag }) => ({
   data: arg({

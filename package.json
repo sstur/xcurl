@@ -53,7 +53,7 @@
     ],
     "rules": {
       "prefer-const": "warn",
-      "@typescript-eslint/consistent-type-imports": "off"
+      "@typescript-eslint/consistent-type-imports": "warn"
     }
   },
   "prettier": {

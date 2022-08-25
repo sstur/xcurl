@@ -1,5 +1,5 @@
-import { URL } from 'url';
-import { Readable } from 'stream';
+import { type URL } from 'url';
+import { type Readable } from 'stream';
 
 import { createRequest } from './createRequest';
 import { Headers } from './Headers';
