@@ -36,13 +36,6 @@ async function main() {
     return;
   }
 
-  const outFile = args.output ? join(process.cwd(), args.output) : null;
-  const stdout: NodeJS.WritableStream = outFile
-    ? createWriteStream(outFile)
-    : process.stdout;
-  const output = createLineWriter(stdout);
-  const isTTY = Boolean(Object(stdout).isTTY);
-
   const bareArgs = args._rest;
   for (const arg of bareArgs) {
     if (arg.startsWith('-')) {
@@ -68,15 +61,6 @@ async function main() {
   const startTime = Date.now();
   const requestOptions = getFetchOptions(parsed, args);
   let response;
-  if (args.verbose) {
-    const { method, headers } = requestOptions;
-    const path = parsed.pathname + parsed.search;
-    output(`> ${method.toUpperCase()} ${path} HTTP/1.1`);
-    for (const [name, value] of headers.toFlatList()) {
-      output(`> ${name}: ${value}`);
-    }
-    output(`>`);
-  }
   try {
     response = await fetch(parsed, requestOptions);
   } catch (e: unknown) {
@@ -91,6 +75,24 @@ async function main() {
     }
     throw e;
   }
+
+  const outFile = args.output ? join(process.cwd(), args.output) : null;
+  const stdout: NodeJS.WritableStream = outFile
+    ? createWriteStream(outFile)
+    : process.stdout;
+  const output = createLineWriter(stdout);
+  const isTTY = Boolean(Object(stdout).isTTY);
+
+  if (args.verbose) {
+    const { method, headers } = requestOptions;
+    const path = parsed.pathname + parsed.search;
+    output(`> ${method.toUpperCase()} ${path} HTTP/1.1`);
+    for (const [name, value] of headers.toFlatList()) {
+      output(`> ${name}: ${value}`);
+    }
+    output(`>`);
+  }
+
   if (args.verbose || args.include) {
     const prefix = args.verbose ? '< ' : '';
     output(`${prefix}HTTP/1.1 ${response.status} ${response.statusText}`);
