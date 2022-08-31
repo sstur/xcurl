@@ -10,6 +10,7 @@ import { parseUrl } from './support/parseUrl';
 import { AbortError } from './support/Errors';
 import { getFetchOptions } from './support/getFetchOptions';
 import { fetch } from './support/fetch';
+import { parseHeaderValue } from './support/parseHeaderValue';
 
 // Will be either `xcurl` or `curl` depending on how the script was invoked.
 const CMD = (process.argv[1] || '').split('/').pop();
@@ -76,7 +77,14 @@ async function main() {
     throw e;
   }
 
-  const outFile = args.output ? join(process.cwd(), args.output) : null;
+  let outFile = args.output ? join(process.cwd(), args.output) : null;
+  const useRemoteHeaderName = args['remote-header-name'] ?? false;
+  if (useRemoteHeaderName) {
+    const contentDispositionRaw = response.headers.get('content-disposition');
+    const [_, params] = parseHeaderValue(contentDispositionRaw);
+    outFile = params.filename ?? null;
+  }
+
   const stdout: NodeJS.WritableStream = outFile
     ? createWriteStream(outFile)
     : process.stdout;

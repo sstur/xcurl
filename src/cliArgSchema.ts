@@ -45,10 +45,14 @@ export const schema = defineSchema(({ arg, argList, flag }) => ({
     typeLabel: '<file>',
     description: 'Write to file instead of stdout',
   }),
-  // 'remote-name': flag({
-  //   alias: 'O',
-  //   description: 'Write output to a file named as the remote file',
-  // }),
+  'remote-header-name': flag({
+    alias: 'J',
+    description: 'Use the header-provided filename',
+  }),
+  'remote-name': flag({
+    alias: 'O',
+    description: 'Write output to a file named as the remote file',
+  }),
   silent: flag({
     alias: 's',
     description: 'Silent mode',

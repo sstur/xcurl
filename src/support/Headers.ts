@@ -5,6 +5,11 @@ export class Headers {
     return this.headers.has(name.toLowerCase());
   }
 
+  get(name: string) {
+    const value = this.headers.get(name.toLowerCase());
+    return value ? value[1].join(',') : null;
+  }
+
   set(name: string, value: string) {
     const key = name.toLowerCase();
     this.headers.set(key, [name, [value]]);
