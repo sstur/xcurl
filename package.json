@@ -41,6 +41,9 @@
     "typescript": "~5.1.6",
     "vitest": "^1.6.0"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "eslintConfig": {
     "extends": "xt",
     "ignorePatterns": [

@@ -1,5 +1,3 @@
-import { URL } from 'url';
-
 const validProtocols = new Set(['http:', 'https:']);
 
 // Actually `curl` supports bare URLs without any protocol or port, but

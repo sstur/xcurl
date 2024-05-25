@@ -1,18 +1,24 @@
-import { join } from 'path';
-import { createWriteStream } from 'fs';
-import { readFile } from 'fs/promises';
+import { resolve } from 'path';
+import { Writable } from 'stream';
+import {
+  type ReadableStream,
+  TextDecoderStream,
+  TransformStream,
+} from 'stream/web';
 
 import { createParser, renderUsage } from '@sstur/clargs';
 
 import { schema } from './cliArgSchema';
 import { parseUrl } from './support/parseUrl';
 import { AbortError } from './support/Errors';
-import { getFetchOptions } from './support/getFetchOptions';
-import { fetch } from './support/fetch';
+import { initRequest } from './support/initRequest';
 import { parseHeaderValue } from './support/parseHeaderValue';
+import { createWriteStreamFromFile } from './support/createWriteStreamFromFile';
+import { getVersion } from './support/getVersion';
+import { createLineWriter } from './support/createLineWriter';
 
 // Will be either `xcurl` or `curl` depending on how the script was invoked.
-const CMD = (process.argv[1] || '').split('/').pop();
+const CMD = (process.argv[1] || '').split('/').pop() ?? '';
 
 const print = createLineWriter(process.stdout);
 const notice = createLineWriter(process.stderr);
@@ -28,10 +34,7 @@ async function main() {
   }
 
   if (args.version) {
-    const root = __dirname.endsWith('/src') ? join(__dirname, '..') : __dirname;
-    const source = await readFile(join(root, 'package.json'), 'utf8');
-    const parsed = JSON.parse(source);
-    const version = parsed.version || '0.0.0';
+    const version = await getVersion();
     print(`xcurl v${version}`);
     return;
   }
@@ -59,24 +62,22 @@ async function main() {
   }
 
   const startTime = Date.now();
-  const requestOptions = getFetchOptions(parsed, args);
-  let response;
-  try {
-    response = await fetch(parsed, requestOptions);
-  } catch (e: unknown) {
-    if (e instanceof Error) {
-      if (Object(e).code === 'ENOENT') {
-        const path = String(Object(e).path);
-        throw new AbortError(`Couldn't read data from file "${path}"`);
-      }
-      if (e.message.includes('reason: getaddrinfo ENOTFOUND')) {
-        throw new AbortError(`(6) Could not resolve host: ${parsed.hostname}`);
-      }
-    }
-    throw e;
-  }
+  const request = await invokeWithErrorHandler(
+    () => initRequest(parsed, args),
+    handleError,
+  );
 
-  let outFile = args.output ? join(process.cwd(), args.output) : null;
+  // Make a copy of the request headers (for use below) and then remove
+  // Transfer-Encoding, otherwise Node will throw UND_ERR_INVALID_ARG
+  const requestHeaders = new Headers(request.headers);
+  request.headers.delete('Transfer-Encoding');
+
+  const response = await invokeWithErrorHandler(
+    () => fetch(request),
+    handleError,
+  );
+
+  let outFile = args.output ? resolve(process.cwd(), args.output) : null;
   const useRemoteHeaderName = args['remote-header-name'] ?? false;
   if (useRemoteHeaderName) {
     const contentDispositionRaw = response.headers.get('content-disposition');
@@ -84,49 +85,62 @@ async function main() {
     outFile = params.get('filename') ?? null;
   }
 
-  const stdout: NodeJS.WritableStream = outFile
-    ? createWriteStream(outFile)
+  const outputStream: Writable = outFile
+    ? await createWriteStreamFromFile(outFile)
     : process.stdout;
-  const output = createLineWriter(stdout);
-  const isTTY = Boolean(Object(stdout).isTTY);
+
+  // This is used to output some logging if `-i` or `-v` is used.
+  // For `-i` we'll output to the same destination as the data (stdout or file)
+  // but with `-v` we'll always output to stderr.
+  const writeLine = createLineWriter(
+    args.verbose ? process.stderr : outputStream,
+  );
+  const isTTY = outFile ? false : process.stdout.isTTY;
 
   if (args.verbose) {
-    const { method, headers } = requestOptions;
+    const method = request.method ?? 'GET';
     const path = parsed.pathname + parsed.search;
-    output(`> ${method.toUpperCase()} ${path} HTTP/1.1`);
-    for (const [name, value] of headers.toFlatList()) {
-      output(`> ${name}: ${value}`);
+    writeLine(`> ${method.toUpperCase()} ${path} HTTP/1.1`);
+    for (const [name, value] of requestHeaders.entries()) {
+      writeLine(`> ${name}: ${value}`);
     }
-    output(`>`);
+    writeLine(`>`);
   }
 
   if (args.verbose || args.include) {
     const prefix = args.verbose ? '< ' : '';
-    output(`${prefix}HTTP/1.1 ${response.status} ${response.statusText}`);
-    for (const [name, value] of response.headers.toFlatList()) {
-      output(`${prefix}${name}: ${value}`);
+    writeLine(`${prefix}HTTP/1.1 ${response.status} ${response.statusText}`);
+    for (const [name, value] of response.headers.entries()) {
+      writeLine(`${prefix}${name}: ${value}`);
     }
-    output(prefix);
+    writeLine(prefix);
   }
-  const { body } = response;
+  const body: ReadableStream<Uint8Array> | null = response.body;
   let bytesReceived = 0;
-  let timeElapsed = 0;
-  body.on('data', (chunk) => {
-    bytesReceived += chunk.length;
-  });
-  body.on('end', () => {
-    timeElapsed = Date.now() - startTime;
-    if (!isTTY && !args.silent) {
-      notice(
-        `Received ${bytesReceived} of ${bytesReceived} in ${timeElapsed} ms`,
-      );
+  if (body) {
+    const byteCountingStream = new TransformStream<Uint8Array, Uint8Array>({
+      transform(chunk, controller) {
+        bytesReceived += chunk.length;
+        controller.enqueue(chunk);
+      },
+    });
+    const writableStream = Writable.toWeb(outputStream);
+    // If we're writing to an interactive terminal, convert to string. By
+    // default this will attempt to decode as utf-8, and on invalid byte
+    // sequence will instead render a replacement character (\uFFFD).
+    if (isTTY) {
+      const textDecoderStream = new TextDecoderStream();
+      await body
+        .pipeThrough(byteCountingStream)
+        .pipeThrough(textDecoderStream)
+        .pipeTo(writableStream);
+    } else {
+      await body.pipeThrough(byteCountingStream).pipeTo(writableStream);
     }
-  });
-  // If we're writing to an interactive terminal, let's convert to string
-  if (isTTY) {
-    await pipeAsString(body, stdout);
-  } else {
-    await pipe(body, stdout);
+  }
+  const timeElapsed = Date.now() - startTime;
+  if (!isTTY && !args.silent) {
+    notice(`Received ${bytesReceived} bytes in ${timeElapsed} ms`);
   }
   if (outFile && !args.silent) {
     notice(`Saved output to: ${outFile}`);
@@ -143,46 +157,37 @@ main().catch((e) => {
   process.exit(1);
 });
 
-function pipe(
-  readStream: NodeJS.ReadableStream,
-  writeStream: NodeJS.WritableStream,
+async function invokeWithErrorHandler<T>(
+  fn: () => Promise<T>,
+  errorHandler: (e: unknown) => void,
 ) {
-  return new Promise<void>((resolve, reject) => {
-    readStream.pipe(writeStream);
-    readStream.on('end', resolve);
-    readStream.on('error', reject);
-  });
+  try {
+    return await fn();
+  } catch (e) {
+    errorHandler(e);
+    throw e;
+  }
 }
 
-function pipeAsString(
-  readStream: NodeJS.ReadableStream,
-  writeStream: NodeJS.WritableStream,
-) {
-  return new Promise<void>((resolve, reject) => {
-    const decoder = new TextDecoder('utf8');
-    readStream.on('data', (chunk) => {
-      const string = decoder.decode(chunk, { stream: true });
-      writeStream.write(string);
-    });
-    readStream.on('error', (error) => {
-      reject(error);
-    });
-    readStream.on('end', () => {
-      const string = decoder.decode();
-      writeStream.write(string);
-      resolve();
-    });
-  });
+function handleError(e: unknown) {
+  if (e instanceof Error) {
+    const error: Record<string, unknown> = Object(e);
+    if (error.code === 'ENOENT') {
+      const path = String(error.path);
+      throw new AbortError(`Couldn't read data from file "${path}"`);
+    }
+    // Error: getaddrinfo ENOTFOUND {hostname}
+    if (error.code === 'ENOTFOUND') {
+      const hostname = String(error.hostname);
+      throw new AbortError(`(6) Could not resolve host: ${hostname}`);
+    }
+  }
+  if (e instanceof TypeError && e.message === 'fetch failed' && e.cause) {
+    handleError(e.cause);
+  }
 }
 
 function usage() {
   const header = `Usage: ${CMD} [options...] <url>`;
   return renderUsage(schema, { header });
-}
-
-function createLineWriter(writeStream: NodeJS.WritableStream) {
-  return (text: string) => {
-    const output = text.slice(-1) === '\n' ? text : text + '\n';
-    writeStream.write(output);
-  };
 }
