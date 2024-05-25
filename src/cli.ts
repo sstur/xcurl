@@ -1,7 +1,6 @@
 import { join } from 'path';
 import { createWriteStream } from 'fs';
 import { readFile } from 'fs/promises';
-import { StringDecoder } from 'string_decoder';
 
 import { createParser, renderUsage } from '@sstur/clargs';
 
@@ -160,16 +159,16 @@ function pipeAsString(
   writeStream: NodeJS.WritableStream,
 ) {
   return new Promise<void>((resolve, reject) => {
-    const decoder = new StringDecoder('utf8');
+    const decoder = new TextDecoder('utf8');
     readStream.on('data', (chunk) => {
-      const string = decoder.write(chunk);
+      const string = decoder.decode(chunk, { stream: true });
       writeStream.write(string);
     });
     readStream.on('error', (error) => {
       reject(error);
     });
     readStream.on('end', () => {
-      const string = decoder.end();
+      const string = decoder.decode();
       writeStream.write(string);
       resolve();
     });
