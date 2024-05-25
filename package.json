@@ -15,10 +15,10 @@
     "unlink": "rm -f node_modules/.bin/xcurl",
     "lint": "eslint --max-warnings 0 .",
     "typecheck": "tsc --noEmit -p .",
+    "unit": "CI=1 vitest --globals --coverage",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "jest": "jest --coverage --passWithNoTests",
-    "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
+    "test": "yarn lint && yarn typecheck && yarn unit && yarn format:check",
     "clean": "rm -rf build coverage",
     "copy-files": "cp README.md build/ && cp -R bin build/ && lean-package > build/package.json",
     "build": "yarn clean && rollup -c && yarn copy-files && prettier --write build",
@@ -30,21 +30,16 @@
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-typescript": "^8.3.3",
     "@sstur/clargs": "^1.4.0",
-    "@types/jest": "^28.1.6",
     "@types/node": "^18.19.33",
+    "@vitest/coverage-v8": "^1.6.0",
     "eslint": "^8.57.0",
     "eslint-config-xt": "^1.8.0",
-    "jest": "^28.1.3",
     "lean-package": "^1.2.0",
     "prettier": "^3.2.5",
     "rollup": "^2.77.0",
     "rollup-plugin-cleanup": "^3.2.1",
-    "ts-jest": "^28.0.7",
-    "typescript": "~5.1.6"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node"
+    "typescript": "~5.1.6",
+    "vitest": "^1.6.0"
   },
   "eslintConfig": {
     "extends": "xt",
