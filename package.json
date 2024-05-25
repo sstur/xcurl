@@ -13,10 +13,10 @@
   "scripts": {
     "link": "yarn run unlink && ln -s ../../bin/xcurl node_modules/.bin/xcurl",
     "unlink": "rm -f node_modules/.bin/xcurl",
-    "lint": "eslint --max-warnings 0 \"src/**/*.{ts,tsx}\"",
+    "lint": "eslint --max-warnings 0 .",
     "typecheck": "tsc --noEmit -p .",
-    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "jest": "jest --coverage --passWithNoTests",
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
     "clean": "rm -rf build coverage",
@@ -49,7 +49,8 @@
   "eslintConfig": {
     "extends": "xt",
     "ignorePatterns": [
-      "/build"
+      "/build",
+      "/coverage"
     ],
     "rules": {
       "prefer-const": "warn",
