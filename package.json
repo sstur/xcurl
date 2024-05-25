@@ -11,17 +11,17 @@
     "index.js"
   ],
   "scripts": {
-    "link": "yarn run unlink && ln -s ../../bin/xcurl node_modules/.bin/xcurl",
+    "link": "pnpm run unlink && ln -s ../../bin/xcurl node_modules/.bin/xcurl",
     "unlink": "rm -f node_modules/.bin/xcurl",
-    "lint": "eslint --max-warnings 0 .",
     "typecheck": "tsc --noEmit -p .",
+    "lint": "eslint --max-warnings 0 .",
     "unit": "CI=1 vitest --globals --coverage",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "yarn lint && yarn typecheck && yarn unit && yarn format:check",
+    "test": "pnpm run '/^(typecheck|lint|format:check|unit)$/'",
     "clean": "rm -rf build coverage",
     "copy-files": "cp README.md build/ && cp -R bin build/ && lean-package > build/package.json",
-    "build": "yarn clean && rollup -c && yarn copy-files && prettier --write build",
+    "build": "pnpm run clean && rollup -c && pnpm run copy-files && prettier --write build",
     "prepublishOnly": "echo '!! Please use ./publish.sh instead !!' && exit 1"
   },
   "dependencies": {},
