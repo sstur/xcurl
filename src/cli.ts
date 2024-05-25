@@ -82,7 +82,7 @@ async function main() {
   if (useRemoteHeaderName) {
     const contentDispositionRaw = response.headers.get('content-disposition');
     const [_, params] = parseHeaderValue(contentDispositionRaw);
-    outFile = params.filename ?? null;
+    outFile = params.get('filename') ?? null;
   }
 
   const stdout: NodeJS.WritableStream = outFile

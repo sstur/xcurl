@@ -13,21 +13,21 @@ function unquote(input: string): string {
 
 export function parseHeaderValue(rawHeaderValue: string | null) {
   const value = rawHeaderValue ?? '';
-  const substitutions: Record<string, string> = {};
+  const substitutions = new Map<string, string>();
   let index = 0;
   const normalized = value.replace(QUOTED_VALUE, (original) => {
     const placeholder = `"${(index += 1)}"`;
-    substitutions[placeholder] = unquote(original);
+    substitutions.set(placeholder, unquote(original));
     return placeholder;
   });
   const restore = (value: string) => {
     return value.replace(QUOTED_VALUE, (placeholder) => {
-      return substitutions[placeholder] ?? placeholder;
+      return substitutions.get(placeholder) ?? placeholder;
     });
   };
   const parts = normalized.split(';');
   const firstPart = parts.shift() ?? '';
-  const params: Record<string, string> = {};
+  const params = new Map<string, string>();
   for (const part of parts) {
     let [key = '', value = ''] = part.split('=');
     // Support RFC 5987 such as filename*=UTF-8''foo%c3%a4
@@ -35,7 +35,7 @@ export function parseHeaderValue(rawHeaderValue: string | null) {
     if (key.length) {
       value = restore(value).trim();
       value = value.replace(/^(UTF-8|ISO-8859-1)'(\w*)'/i, '');
-      params[key] = decode(value);
+      params.set(key, decode(value));
     }
   }
   return [
