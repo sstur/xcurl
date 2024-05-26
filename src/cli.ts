@@ -64,7 +64,7 @@ async function main() {
   const startTime = Date.now();
   const request = await invokeWithErrorHandler(
     () => initRequest(url, args),
-    handleError,
+    handleRequestError,
   );
 
   // Make a copy of the request headers (for use below) and then remove
@@ -74,13 +74,16 @@ async function main() {
 
   const response = await invokeWithErrorHandler(
     () => fetch(request),
-    handleError,
+    handleRequestError,
   );
 
   const outputFileName = getOutputFileName(url, args, response.headers);
 
   const outputStream: Writable = outputFileName
-    ? await createWriteStreamFromFile(outputFileName)
+    ? await invokeWithErrorHandler(
+        () => createWriteStreamFromFile(outputFileName),
+        handleOutputFileError,
+      )
     : process.stdout;
 
   // This is used to output some logging if `-i` or `-v` is used.
@@ -191,12 +194,12 @@ async function invokeWithErrorHandler<T>(
   }
 }
 
-function handleError(e: unknown) {
+function handleRequestError(e: unknown) {
   if (e instanceof Error) {
     const error: Record<string, unknown> = Object(e);
     if (error.code === 'ENOENT') {
       const path = String(error.path);
-      throw new AbortError(`Couldn't read data from file "${path}"`);
+      throw new AbortError(`Failed to open "${path}"`);
     }
     // Error: getaddrinfo ENOTFOUND {hostname}
     if (error.code === 'ENOTFOUND') {
@@ -205,7 +208,19 @@ function handleError(e: unknown) {
     }
   }
   if (e instanceof TypeError && e.message === 'fetch failed' && e.cause) {
-    handleError(e.cause);
+    handleRequestError(e.cause);
+  }
+}
+
+function handleOutputFileError(e: unknown) {
+  if (e instanceof Error) {
+    const error: Record<string, unknown> = Object(e);
+    if (error.code === 'ENOENT') {
+      const path = String(error.path);
+      throw new AbortError(
+        `(23) Failure writing output to destination "${path}"`,
+      );
+    }
   }
 }
 
