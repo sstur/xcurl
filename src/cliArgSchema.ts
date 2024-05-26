@@ -77,11 +77,12 @@ export const schema = defineSchema(({ arg, argList, flag }) => ({
     typeLabel: '<user:password>',
     description: 'Server user and password',
   }),
-  // 'user-agent': arg({
-  //   alias: 'A',
-  //   typeLabel: '<name>',
-  //   description: 'Send User-Agent <name> to server',
-  // }),
+  'user-agent': arg({
+    alias: 'A',
+    optional: true,
+    typeLabel: '<name>',
+    description: 'Send User-Agent <name> to server',
+  }),
   url: arg({
     optional: true,
     typeLabel: '<url>',

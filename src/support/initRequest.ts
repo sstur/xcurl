@@ -30,13 +30,16 @@ export async function initRequest(
   const headers = new Headers();
   const defaultHeaders = new Map([
     ['Host', url.host],
-    ['User-Agent', 'curl'],
     ['Accept', '*/*'],
   ]);
   const basicAuth = args.user;
   if (basicAuth) {
     headers.set('Authorization', `Basic ${btoa(basicAuth)}`);
   }
+
+  const userAgent = args['user-agent'] || 'curl';
+  headers.set('User-Agent', userAgent);
+
   for (const header of headersArray) {
     const parsed = parseHeader(header);
     if (parsed) {
