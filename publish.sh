@@ -1,6 +1,6 @@
 pnpm run build
 if [ $? -eq 0 ]; then
-    cd build
+    cd dist
     npm publish
     cd ..
 fi

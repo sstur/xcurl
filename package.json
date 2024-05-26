@@ -19,9 +19,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "pnpm run '/^(typecheck|lint|format:check|unit)$/'",
-    "clean": "rm -rf build coverage",
-    "copy-files": "cp README.md build/ && cp -R bin build/ && lean-package > build/package.json",
-    "build": "pnpm run clean && rollup -c && pnpm run copy-files && prettier --write build",
+    "clean": "rm -rf dist coverage",
+    "copy-files": "cp README.md dist/ && cp -R bin dist/ && lean-package > dist/package.json",
+    "build": "pnpm run clean && rollup -c && pnpm run copy-files && prettier --write dist",
     "prepublishOnly": "echo '!! Please use ./publish.sh instead !!' && exit 1"
   },
   "dependencies": {},
@@ -47,7 +47,7 @@
   "eslintConfig": {
     "extends": "xt",
     "ignorePatterns": [
-      "/build",
+      "/dist",
       "/coverage"
     ],
     "rules": {
