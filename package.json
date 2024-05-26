@@ -3,7 +3,6 @@
   "version": "2.1.0",
   "description": "A curl clone in Node",
   "bin": {
-    "curl": "./bin/xcurl",
     "xcurl": "./bin/xcurl"
   },
   "files": [
