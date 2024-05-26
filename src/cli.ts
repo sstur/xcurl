@@ -23,11 +23,22 @@ const CMD = (process.argv[1] || '').split('/').pop() ?? '';
 const print = createLineWriter(process.stdout);
 const notice = createLineWriter(process.stderr);
 
-async function main() {
-  const argv = process.argv.slice(2);
-  const parser = createParser(schema);
-  const args = parser.parse(argv);
+const argv = process.argv.slice(2);
+const parser = createParser(schema);
 
+const args = invokeWithErrorHandler(
+  () => parser.parse(argv),
+  (e) => {
+    const message = e instanceof Error ? e.message : String(e);
+    notice(`${CMD}: ${message}`);
+    process.exit(1);
+  },
+);
+
+const silent = args.silent ?? false;
+const silenceErrors = silent && !args['show-error'];
+
+async function main() {
   if (args.help) {
     print(usage());
     return;
@@ -62,7 +73,7 @@ async function main() {
   }
 
   const startTime = Date.now();
-  const request = await invokeWithErrorHandler(
+  const request = await invokeWithErrorHandlerAsync(
     () => initRequest(url, args),
     handleRequestError,
   );
@@ -72,7 +83,7 @@ async function main() {
   const requestHeaders = new Headers(request.headers);
   request.headers.delete('Transfer-Encoding');
 
-  const response = await invokeWithErrorHandler(
+  const response = await invokeWithErrorHandlerAsync(
     () => fetch(request),
     handleRequestError,
   );
@@ -80,7 +91,7 @@ async function main() {
   const outputFileName = getOutputFileName(url, args, response.headers);
 
   const outputStream: Writable = outputFileName
-    ? await invokeWithErrorHandler(
+    ? await invokeWithErrorHandlerAsync(
         () => createWriteStreamFromFile(outputFileName),
         handleOutputFileError,
       )
@@ -145,11 +156,13 @@ async function main() {
 }
 
 main().catch((e) => {
-  if (e instanceof AbortError) {
-    notice(`${CMD}: ${e.message}`);
-  } else {
-    // eslint-disable-next-line no-console
-    console.error(e);
+  if (!silenceErrors) {
+    if (e instanceof AbortError) {
+      notice(`${CMD}: ${e.message}`);
+    } else {
+      // eslint-disable-next-line no-console
+      console.error(e);
+    }
   }
   process.exit(1);
 });
@@ -182,7 +195,19 @@ function getOutputFileName(
   return null;
 }
 
-async function invokeWithErrorHandler<T>(
+function invokeWithErrorHandler<T>(
+  fn: () => T,
+  errorHandler: (e: unknown) => void,
+) {
+  try {
+    return fn();
+  } catch (e) {
+    errorHandler(e);
+    throw e;
+  }
+}
+
+async function invokeWithErrorHandlerAsync<T>(
   fn: () => Promise<T>,
   errorHandler: (e: unknown) => void,
 ) {

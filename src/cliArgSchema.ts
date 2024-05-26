@@ -57,6 +57,16 @@ export const schema = defineSchema(({ arg, argList, flag }) => ({
     alias: 'O',
     description: 'Write output to a file named as the remote file',
   }),
+  request: arg({
+    alias: 'X',
+    optional: true,
+    typeLabel: '<command>',
+    description: 'Specify request command to use',
+  }),
+  'show-error': flag({
+    alias: 'S',
+    description: 'Show error even when -s is used',
+  }),
   silent: flag({
     alias: 's',
     description: 'Silent mode',
@@ -88,12 +98,6 @@ export const schema = defineSchema(({ arg, argList, flag }) => ({
   version: flag({
     alias: 'V',
     description: 'Show version number and quit',
-  }),
-  request: arg({
-    alias: 'X',
-    optional: true,
-    typeLabel: '<command>',
-    description: 'Specify request command to use',
   }),
 }));
 
