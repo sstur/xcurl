@@ -39,6 +39,10 @@ export const schema = defineSchema(({ arg, argList, flag }) => ({
     alias: 'i',
     description: 'Include protocol response headers in the output',
   }),
+  location: flag({
+    alias: 'L',
+    description: 'Follow redirects',
+  }),
   output: arg({
     alias: 'o',
     optional: true,

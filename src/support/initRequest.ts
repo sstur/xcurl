@@ -66,7 +66,7 @@ export async function initRequest(
     method,
     headers,
     body,
-    redirect: 'manual',
+    redirect: args.location ? 'follow' : 'manual',
     duplex: isBodyStream ? 'half' : undefined,
   });
 }
