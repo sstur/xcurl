@@ -37,7 +37,7 @@ export async function initRequest(
     const parsed = parseHeader(header);
     if (parsed) {
       const [name, value] = parsed;
-      headers.append(name, value);
+      headers.set(name, value);
     }
   }
   for (const [name, value] of defaultHeaders) {
