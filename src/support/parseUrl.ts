@@ -1,12 +1,16 @@
 const validProtocols = new Set(['http:', 'https:']);
 
-// Actually `curl` supports bare URLs without any protocol or port, but
-// `new URL()` will not parse such strings.
-export function parseUrl(url: string) {
-  let parsed: URL;
+function tryParse(url: string): URL | null {
   try {
-    parsed = new URL(url);
+    return new URL(url);
   } catch (err) {
+    return null;
+  }
+}
+
+export function parseUrl(url: string) {
+  const parsed = tryParse(url) ?? tryParse('http://' + url);
+  if (!parsed) {
     return null;
   }
   const isValidProtocol = validProtocols.has(parsed.protocol);
