@@ -71,16 +71,12 @@ export const schema = defineSchema(({ arg, argList, flag }) => ({
     alias: 's',
     description: 'Silent mode',
   }),
-  // 'upload-file': arg({
-  //   alias: 'T',
-  //   typeLabel: '<file>',
-  //   description: 'Transfer local FILE to destination',
-  // }),
-  // user: arg({
-  //   alias: 'u',
-  //   typeLabel: '<user:password>',
-  //   description: 'Server user and password',
-  // }),
+  user: arg({
+    alias: 'u',
+    optional: true,
+    typeLabel: '<user:password>',
+    description: 'Server user and password',
+  }),
   // 'user-agent': arg({
   //   alias: 'A',
   //   typeLabel: '<name>',

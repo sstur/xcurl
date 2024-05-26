@@ -33,6 +33,10 @@ export async function initRequest(
     ['User-Agent', 'curl'],
     ['Accept', '*/*'],
   ]);
+  const basicAuth = args.user;
+  if (basicAuth) {
+    headers.set('Authorization', `Basic ${btoa(basicAuth)}`);
+  }
   for (const header of headersArray) {
     const parsed = parseHeader(header);
     if (parsed) {
