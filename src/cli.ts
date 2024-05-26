@@ -8,7 +8,7 @@ import {
 
 import { createParser, renderUsage } from '@sstur/clargs';
 
-import { schema } from './cliArgSchema';
+import { type ParsedOptions, schema } from './cliArgSchema';
 import { parseUrl } from './support/parseUrl';
 import { AbortError } from './support/Errors';
 import { initRequest } from './support/initRequest';
@@ -50,8 +50,8 @@ async function main() {
   if (!inputUrl) {
     throw new AbortError('no URL specified!');
   }
-  const parsed = parseUrl(inputUrl);
-  if (!parsed) {
+  const url = parseUrl(inputUrl);
+  if (!url) {
     throw new AbortError(`(3) URL using bad/illegal format or missing URL`);
   }
 
@@ -63,7 +63,7 @@ async function main() {
 
   const startTime = Date.now();
   const request = await invokeWithErrorHandler(
-    () => initRequest(parsed, args),
+    () => initRequest(url, args),
     handleError,
   );
 
@@ -77,16 +77,10 @@ async function main() {
     handleError,
   );
 
-  let outFile = args.output ? resolve(process.cwd(), args.output) : null;
-  const useRemoteHeaderName = args['remote-header-name'] ?? false;
-  if (useRemoteHeaderName) {
-    const contentDispositionRaw = response.headers.get('content-disposition');
-    const [_, params] = parseHeaderValue(contentDispositionRaw);
-    outFile = params.get('filename') ?? null;
-  }
+  const outputFileName = getOutputFileName(url, args, response.headers);
 
-  const outputStream: Writable = outFile
-    ? await createWriteStreamFromFile(outFile)
+  const outputStream: Writable = outputFileName
+    ? await createWriteStreamFromFile(outputFileName)
     : process.stdout;
 
   // This is used to output some logging if `-i` or `-v` is used.
@@ -95,11 +89,11 @@ async function main() {
   const writeLine = createLineWriter(
     args.verbose ? process.stderr : outputStream,
   );
-  const isTTY = outFile ? false : process.stdout.isTTY;
+  const isTTY = outputFileName ? false : process.stdout.isTTY;
 
   if (args.verbose) {
     const method = request.method ?? 'GET';
-    const path = parsed.pathname + parsed.search;
+    const path = url.pathname + url.search;
     writeLine(`> ${method.toUpperCase()} ${path} HTTP/1.1`);
     for (const [name, value] of requestHeaders.entries()) {
       writeLine(`> ${name}: ${value}`);
@@ -142,8 +136,8 @@ async function main() {
   if (!isTTY && !args.silent) {
     notice(`Received ${bytesReceived} bytes in ${timeElapsed} ms`);
   }
-  if (outFile && !args.silent) {
-    notice(`Saved output to: ${outFile}`);
+  if (outputFileName && !args.silent) {
+    notice(`Saved output to: ${outputFileName}`);
   }
 }
 
@@ -156,6 +150,34 @@ main().catch((e) => {
   }
   process.exit(1);
 });
+
+function getOutputFileName(
+  url: URL,
+  args: ParsedOptions,
+  responseHeaders: Headers,
+): string | null {
+  if (args.output) {
+    return resolve(process.cwd(), args.output);
+  }
+  const useNameFromUrl = args['remote-name'];
+  if (!useNameFromUrl) {
+    return null;
+  }
+  const useNameFromHeader = args['remote-header-name'];
+  if (useNameFromHeader) {
+    const contentDispositionRaw = responseHeaders.get('content-disposition');
+    const [_, params] = parseHeaderValue(contentDispositionRaw);
+    const name = params.get('filename');
+    if (name) {
+      return name;
+    }
+  }
+  const fileName = url.pathname.split('/').pop();
+  if (fileName) {
+    return fileName;
+  }
+  return null;
+}
 
 async function invokeWithErrorHandler<T>(
   fn: () => Promise<T>,
