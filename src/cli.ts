@@ -88,6 +88,11 @@ async function main() {
     handleRequestError,
   );
 
+  const { status } = response;
+  if (args.fail && (inRange(status, 400, 499) || inRange(status, 500, 599))) {
+    throw new AbortError(`(22) The requested URL returned error: ${status}`);
+  }
+
   const outputFileName = getOutputFileName(url, args, response.headers);
 
   const outputStream: Writable = outputFileName
@@ -166,6 +171,10 @@ main().catch((e) => {
   }
   process.exit(1);
 });
+
+function inRange(value: number, min: number, max: number): boolean {
+  return value >= min && value <= max;
+}
 
 function getOutputFileName(
   url: URL,

@@ -22,10 +22,10 @@ export const schema = defineSchema(({ arg, argList, flag }) => ({
     typeLabel: '<data>',
     description: `HTTP POST data, '@' allowed`,
   }),
-  // fail: flag({
-  //   alias: 'f',
-  //   description: 'Fail silently (no output at all) on HTTP errors',
-  // }),
+  fail: flag({
+    alias: 'f',
+    description: 'Fail silently (no output at all) on HTTP errors',
+  }),
   header: argList({
     alias: 'H',
     typeLabel: '<header/@file>',
