@@ -1,21 +1,20 @@
 import { resolve } from 'path';
 import { Writable } from 'stream';
 import {
-  type ReadableStream,
   TextDecoderStream,
   TransformStream,
+  type ReadableStream,
 } from 'stream/web';
-
 import { createParser, renderUsage } from '@sstur/clargs';
 
-import { type ParsedOptions, schema } from './cliArgSchema';
-import { parseUrl } from './support/parseUrl';
+import { schema, type ParsedOptions } from './cliArgSchema';
+import { createLineWriter } from './support/createLineWriter';
+import { createWriteStreamFromFile } from './support/createWriteStreamFromFile';
 import { AbortError } from './support/Errors';
+import { getVersion } from './support/getVersion';
 import { initRequest } from './support/initRequest';
 import { parseHeaderValue } from './support/parseHeaderValue';
-import { createWriteStreamFromFile } from './support/createWriteStreamFromFile';
-import { getVersion } from './support/getVersion';
-import { createLineWriter } from './support/createLineWriter';
+import { parseUrl } from './support/parseUrl';
 
 // Will be either `xcurl` or `curl` depending on how the script was invoked.
 const CMD = (process.argv[1] || '').split('/').pop() ?? '';

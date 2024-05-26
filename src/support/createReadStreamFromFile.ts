@@ -1,5 +1,5 @@
-import { open as openFile } from 'fs/promises';
 import type { ReadStream } from 'fs';
+import { open as openFile } from 'fs/promises';
 
 type FileDetails = {
   size: number;

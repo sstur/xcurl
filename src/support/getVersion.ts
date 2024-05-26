@@ -1,5 +1,5 @@
-import { join } from 'path';
 import { readFile } from 'fs/promises';
+import { join } from 'path';
 
 // This is a bit hacky, but we're either in src/support/getVersion.ts or we're
 // in the final bundled index.js

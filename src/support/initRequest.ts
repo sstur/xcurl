@@ -1,10 +1,9 @@
 import { resolve } from 'path';
-import type { URL } from 'url';
-import type { ReadableStream } from 'stream/web';
 import { Readable } from 'stream';
+import type { ReadableStream } from 'stream/web';
+import type { URL } from 'url';
 
 import type { ParsedOptions } from '../cliArgSchema';
-
 import { createReadStreamFromFile } from './createReadStreamFromFile';
 
 const methodsWithBody: Record<string, true> = {
