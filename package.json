@@ -5,10 +5,6 @@
   "bin": {
     "xcurl": "./bin/xcurl"
   },
-  "files": [
-    "bin",
-    "index.js"
-  ],
   "scripts": {
     "link": "pnpm run unlink && ln -s ../../bin/xcurl node_modules/.bin/xcurl",
     "unlink": "rm -f node_modules/.bin/xcurl",
@@ -20,7 +16,7 @@
     "test": "pnpm run '/^(typecheck|lint|format:check|unit)$/'",
     "clean": "rm -rf dist coverage",
     "copy-files": "cp README.md dist/ && cp -R bin dist/ && lean-package > dist/package.json",
-    "build": "pnpm run clean && rollup -c && pnpm run copy-files && prettier --write dist",
+    "build": "pnpm run clean && rollup -c && pnpm run copy-files && prettier --ignore-path .prettierignore --write dist",
     "prepublishOnly": "echo '!! Please use ./publish.sh instead !!' && exit 1"
   },
   "devDependencies": {
