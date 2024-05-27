@@ -1,6 +1,6 @@
 {
   "name": "xcurl",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "A curl clone in Node",
   "bin": {
     "xcurl": "./bin/xcurl"
